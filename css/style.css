@@ -1,0 +1,185 @@
+/* 🔄 Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    height: 100%;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #1a4d7a; /* Unified primary blue */
+    color: #f5f5f5;
+    line-height: 1.6;
+  }
+  
+  /* 📦 Page Wrapper to push footer down */
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  main {
+    flex: 1;
+  }
+  
+  /* 📌 Navigation */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0e2a47;
+    padding: 20px 40px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .nav-left h1 {
+    color: #00bfff;
+    font-size: 26px;
+    font-weight: bold;
+  }
+  
+  .nav-right {
+    display: flex;
+    gap: 25px;
+    list-style: none;
+  }
+  
+  .nav-right li a {
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-right li a:hover {
+    color: #29c00b; /* Green accent */
+  }
+  
+  /* 🌟 Hero Section */
+  .hero {
+    text-align: center;
+    padding: 100px 20px;
+    background-color: #1a4d7a;
+    color: #ffffff;
+  }
+  
+  .hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+  }
+  
+  .hero h1 span {
+    color: #29c00b; /* Green accent */
+  }
+  
+  .hero p {
+    font-size: 18px;
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    color: #dcdcdc;
+  }
+  
+  .btn {
+    display: inline-block;
+    padding: 14px 32px;
+    background-color: #00bfff;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+  }
+  
+  .btn:hover {
+    background-color: #007acc;
+    transform: translateY(-2px);
+  }
+  
+  /* 🔻 Footer */
+  footer {
+    background-color: #0e2a47;
+    color: #ccc;
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    margin-top: auto;
+  }
+  
+  /* 📱 Responsive Design */
+  @media (max-width: 768px) {
+    nav {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .nav-right {
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 10px;
+    }
+  
+    .hero h1 {
+      font-size: 36px;
+    }
+  
+    .hero p {
+      font-size: 16px;
+    }
+  
+    .btn {
+      padding: 12px 24px;
+      font-size: 14px;
+    }
+  }
+  /* 🌐 ABOUT PAGE STYLING - Consistent with Index Page */
+
+/* Section Headings */
+.hero h2 {
+  font-size: 32px;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+/* Styled List (ul and ol) */
+.hero ul,
+.hero ol {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  padding-left: 20px;
+  color: #e6e6e6;
+}
+
+.hero ul li,
+.hero ol li {
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+/* List icons spacing */
+.hero ul li::marker,
+.hero ol li::marker {
+  color: #29c00b; /* Green check or number */
+}
+
+/* About "Get Started" Button spacing */
+.hero .btn {
+  margin-top: 25px;
+}
+
+/* Highlighted span (same as index) */
+.hero h1 span {
+  color: #29c00b;
+}
+
+/* Optional: Active link highlight in nav */
+.nav-right .active {
+  color: #29c00b;
+  font-weight: bold;
+  border-bottom: 2px solid #29c00b;
+  padding-bottom: 2px;
+}
+
+  
