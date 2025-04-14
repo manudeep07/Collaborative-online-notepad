@@ -169,6 +169,9 @@ if (isset($_GET['deleted'])) {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(41, 192, 11, 0.4);
         }
+        .save-btn {
+            display: block;
+        }
         .sidebar-section h2 {
             color: #ffffff;
             font-size: 1.25rem;
@@ -270,10 +273,6 @@ if (isset($_GET['deleted'])) {
             background: linear-gradient(90deg, #00bfff, #0099cc);
             color: #ffffff;
         }
-        .delete-btn {
-            background: linear-gradient(90deg, #dc3545, #c82333);
-            color: #ffffff;
-        }
         .action-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
@@ -319,35 +318,87 @@ if (isset($_GET['deleted'])) {
 
         /* Quill Editor Customization */
         .ql-toolbar.ql-snow {
-            border: 2px solid transparent !important;
-            border-radius: 10px 10px 0 0 !important;
-            background: linear-gradient(145deg, #0e2a47, #123a62) !important;
-            padding: 0.75rem !important;
+            border: 2px solid transparent;
+            border-radius: 10px 10px 0 0;
+            background: linear-gradient(145deg, #0e2a47, #123a62);
+            padding: 0.75rem;
         }
         .ql-container.ql-snow {
-            border: 2px solid transparent !important;
-            border-top: none !important;
-            border-radius: 0 0 10px 10px !important;
-            background-color: #123a62 !important;
-            color: #ffffff !important;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+            border: 2px solid transparent;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            background-color: #123a62;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .ql-editor {
-            min-height: calc(100vh - 300px) !important;
-            font-size: 1rem !important;
+            min-height: calc(100vh - 300px);
+            font-size: 1rem;
         }
         .ql-snow .ql-picker, .ql-snow .ql-icon-picker {
-            color: #ffffff !important;
+            color: #ffffff;
         }
         .ql-snow .ql-stroke {
-            stroke: #ffffff !important;
+            stroke: #ffffff;
         }
         .ql-snow .ql-fill {
-            fill: #ffffff !important;
+            fill: #ffffff;
         }
         .ql-snow .ql-picker-options {
-            background-color: #0e2a47 !important;
-            color: #ffffff !important;
+            background-color: #0e2a47;
+            color: #ffffff;
+        }
+
+        /* Quill Toolbar Button Hover Effects */
+        .ql-snow .ql-toolbar button,
+        .ql-snow .ql-toolbar .ql-picker-label {
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            padding: 6px;
+            position: relative;
+        }
+        .ql-snow .ql-toolbar button:hover,
+        .ql-snow .ql-toolbar .ql-picker-label:hover {
+            transform: scale(1.1);
+            background: linear-gradient(90deg, #00bfff, #0099cc);
+            box-shadow: 0 0 8px rgba(0, 191, 255, 0.5);
+        }
+        .ql-snow .ql-toolbar button.ql-active,
+        .ql-snow .ql-toolbar .ql-picker-label.ql-active {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, #29c00b, #23a00a);
+            box-shadow: 0 0 8px rgba(41, 192, 11, 0.5);
+        }
+        .ql-snow .ql-picker-item:hover {
+            background-color: #00bfff;
+            color: #ffffff;
+        }
+        .ql-snow .ql-toolbar:hover {
+            border-color: #00bfff;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+        }
+
+        /* Tooltip Styling */
+        .ql-snow .ql-toolbar button[title],
+        .ql-snow .ql-toolbar .ql-picker-label[title] {
+            position: relative;
+        }
+        .ql-snow .ql-toolbar button[title]:hover:after,
+        .ql-snow .ql-toolbar .ql-picker-label[title]:hover:after {
+            content: attr(title);
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0e2a47;
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 10;
+            margin-top: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         /* Share Modal */
@@ -532,7 +583,6 @@ if (isset($_GET['deleted'])) {
                 <div class="sidebar-section note-actions">
                     <button class="action-btn save-btn"><i class="fas fa-save"></i> Save Note</button>
                     <button class="action-btn share-btn"><i class="fas fa-share-alt"></i> Share Note</button>
-                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete Note</button>
                 </div>
             </div>
             <div class="main-content">
@@ -570,7 +620,7 @@ if (isset($_GET['deleted'])) {
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script>
-        // Initialize Quill editor
+        // Initialize Quill editor without undo/redo
         var quill = new Quill('#editor', {
             theme: 'snow',
             modules: {
@@ -585,11 +635,11 @@ if (isset($_GET['deleted'])) {
             }
         });
 
-        // Track current note and WebSocket
         let currentNoteId = null;
+        let currentPermission = 'edit';
         let ws = null;
 
-        // Connect to WebSocket
+        // WebSocket setup
         function connectWebSocket() {
             ws = new WebSocket('ws://localhost:8080');
             ws.onopen = () => {
@@ -598,7 +648,6 @@ if (isset($_GET['deleted'])) {
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.noteId == currentNoteId && data.delta) {
-                    // Apply delta from other users
                     quill.updateContents(data.delta);
                 }
             };
@@ -612,41 +661,35 @@ if (isset($_GET['deleted'])) {
         }
         connectWebSocket();
 
-        // Send Quill changes to WebSocket
+        // Send Quill changes
         quill.on('text-change', (delta, oldDelta, source) => {
-    if (source === 'user' && currentNoteId && ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-            noteId: currentNoteId,
-            delta: delta,
-            userId: '<?php echo $userId; ?>'
-        }));
-    }
-});
+            if (source === 'user' && currentNoteId && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    noteId: currentNoteId,
+                    delta: delta,
+                    userId: '<?php echo $userId; ?>'
+                }));
+            }
+        });
 
         // Load note on click
         document.querySelectorAll('.notes li, .shared-notes li').forEach(note => {
             note.addEventListener('click', function(e) {
                 if (e.target.closest('.delete-note-btn')) return;
                 const noteId = this.dataset.noteId;
-                const permission = this.dataset.permission || 'edit'; // Owners have edit permission
+                const permission = this.dataset.permission || 'edit';
                 currentNoteId = noteId;
+                currentPermission = permission;
                 fetch(`get_note.php?note_id=${noteId}`)
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById('note-title').value = data.note_title;
                         quill.setContents(JSON.parse(data.note_content));
-                        // Disable editing for view-only shared notes
                         quill.enable(permission === 'edit');
+                        const saveBtn = document.querySelector('.save-btn');
+                        saveBtn.style.display = permission === 'edit' ? 'block' : 'none';
                     });
             });
-        });
-
-        // Create new note
-        document.querySelector('.new-note-btn').addEventListener('click', function() {
-            document.getElementById('note-title').value = '';
-            quill.setContents([]);
-            quill.enable(true);
-            currentNoteId = null;
         });
 
         // Save note
@@ -659,7 +702,7 @@ if (isset($_GET['deleted'])) {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `note_title=${encodeURIComponent(noteTitle)}&note_content=${encodeURIComponent(noteContent)}${currentNoteId ? '&note_id=' + currentNoteId : ''}`
+                body: `note_title=${encodeURIComponent(noteTitle)}¬e_content=${encodeURIComponent(noteContent)}${currentNoteId ? '¬e_id=' + currentNoteId : ''}`
             })
             .then(response => response.json())
             .then(data => {
@@ -673,6 +716,20 @@ if (isset($_GET['deleted'])) {
                     alert('Error saving note: ' + data.error);
                 }
             });
+        });
+
+        // Create new note
+        document.querySelector('.new-note-btn').addEventListener('click', function() {
+            document.getElementById('note-title').value = '';
+            quill.setContents([]);
+            quill.enable(true);
+            currentNoteId = null;
+            currentPermission = 'edit';
+            const saveBtn = document.querySelector('.save-btn');
+            saveBtn.style.display = 'block';
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = '1';
+            saveBtn.style.cursor = 'pointer';
         });
 
         // Share note
