@@ -2,31 +2,34 @@
 session_start();
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'Not logged in']);
     exit();
 }
-
-if (!isset($_GET['note_id'])) {
-    http_response_code(400);
-    echo json_encode(['error' => 'No note ID']);
-    exit();
-}
-
-$userId = $_SESSION['user_id'];
-$noteId = intval($_GET['note_id']);
 
 $conn = new mysqli("localhost", "root", "", "notepad_db");
+$userId = $_SESSION['user_id'];
+$noteId = isset($_GET['note_id']) ? (int)$_GET['note_id'] : 0;
 
-$stmt = $conn->prepare("SELECT id, note_title, note_content FROM notes WHERE id = ? AND user_id = ?");
-$stmt->bind_param("ii", $noteId, $userId);
+$stmt = $conn->prepare("
+    SELECT n.id, n.note_title, n.note_content 
+    FROM notes n 
+    LEFT JOIN shared_notes sn ON n.id = sn.note_id 
+    WHERE n.id = ? AND (n.user_id = ? OR sn.shared_with_user_id = ?)
+");
+$stmt->bind_param("iii", $noteId, $userId, $userId);
 $stmt->execute();
 $result = $stmt->get_result();
+$note = $result->fetch_assoc();
 
-if ($result->num_rows === 1) {
-    echo json_encode($result->fetch_assoc());
+header('Content-Type: application/json');
+if ($note) {
+    echo json_encode([
+        'note_title' => $note['note_title'],
+        'note_content' => $note['note_content']
+    ]);
 } else {
-    echo json_encode(['error' => 'Note not found']);
+    http_response_code(404);
+    echo json_encode(['error' => 'Note not found or unauthorized']);
 }
-
 $stmt->close();
 $conn->close();
+?>
