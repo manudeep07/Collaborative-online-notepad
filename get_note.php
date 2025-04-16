@@ -22,9 +22,11 @@ $note = $result->fetch_assoc();
 
 header('Content-Type: application/json');
 if ($note) {
+    // Convert plain text back to Quill delta for editor compatibility
+    $delta = ['ops' => [['insert' => $note['note_content']]]];
     echo json_encode([
         'note_title' => $note['note_title'],
-        'note_content' => $note['note_content']
+        'note_content' => json_encode($delta)
     ]);
 } else {
     http_response_code(404);
