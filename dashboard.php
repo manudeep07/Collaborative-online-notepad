@@ -236,12 +236,23 @@ if (isset($_GET['deleted'])) {
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline', 'strike'],
                     [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }], // Added text alignment options
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     ['link', 'image'],
-                    ['clean']
-                ]
+                    ['clean'],
+                    ['undo', 'redo'] // Added undo/redo buttons
+                ],
+                history: {
+                    delay: 1000,
+                    maxStack: 500,
+                    userOnly: true
+                }
             }
         });
+
+        // Add custom undo/redo icons
+        Quill.import('ui/icons')['undo'] = '<i class="fas fa-undo"></i>';
+        Quill.import('ui/icons')['redo'] = '<i class="fas fa-redo"></i>';
 
         let currentNoteId = null;
         let currentPermission = 'edit';
@@ -313,7 +324,7 @@ if (isset($_GET['deleted'])) {
             fetch('save_note.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `note_title=${encodeURIComponent(noteTitle)}&note_content=${encodeURIComponent(noteContent)}${currentNoteId ? '&note_id=' + currentNoteId : ''}`
+                body: `note_title=${encodeURIComponent(noteTitle)}¬e_content=${encodeURIComponent(noteContent)}${currentNoteId ? '¬e_id=' + currentNoteId : ''}`
             })
             .then(response => {
                 if (!response.ok) throw new Error('Server error');
