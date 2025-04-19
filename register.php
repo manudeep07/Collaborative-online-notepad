@@ -379,12 +379,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <p>© <?php echo date('Y'); ?> Collaborative Notepad. All rights reserved.</p>
     </footer>
 
-    <script>
-        // Optional: Add loading state to button on form submit
-        document.getElementById('register-form').addEventListener('submit', function() {
-            const button = this.querySelector('button[type="submit"]');
-            button.disabled = true;
-        });
-    </script>
+   
 </body>
 </html>

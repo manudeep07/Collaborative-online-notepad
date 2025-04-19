@@ -271,11 +271,7 @@
                     <h3>Team Collaboration</h3>
                     <p>Work together in real-time with your team members from anywhere in the world.</p>
                 </div>
-                <div class="feature-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Secure & Private</h3>
-                    <p>Your notes are encrypted and protected. You control who can access your content.</p>
-                </div>
+                
                 <div class="feature-item">
                     <i class="fas fa-sync"></i>
                     <h3>Real-time Updates</h3>

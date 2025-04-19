@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $conn = new mysqli("localhost", "root", "", "notepad_db");
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die("Database connection failed: " . $conn->connect_error);
 }
 $userId = $_SESSION['user_id'];
 
@@ -93,9 +93,11 @@ if (isset($_GET['deleted'])) {
         .note-title { font-weight: 500; color: #ffffff; font-size: 1rem; }
         .note-owner, .note-date { font-size: 0.875rem; color: #dcdcdc; }
         .notes li i, .shared-notes li i { color: #29c00b; font-size: 1.25rem; }
-        .delete-note-btn { background: linear-gradient(90deg, #dc3545, #c82333); color: #ffffff; border: none; border-radius: 8px; padding: 0.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
-        .delete-note-btn:hover { transform: scale(1.1); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
-        .delete-note-btn:focus { outline: 3px solid #00bfff; outline-offset: 2px; }
+        .note-buttons { display: flex; gap: 0.5rem; align-items: center; }
+        .delete-note-btn, .download-note-btn { background: linear-gradient(90deg, #dc3545, #c82333); color: #ffffff; border: none; border-radius: 8px; padding: 0.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; width: 32px; height: 32px; }
+        .download-note-btn { background: linear-gradient(90deg, #00bfff, #0099cc); }
+        .delete-note-btn:hover, .download-note-btn:hover { transform: scale(1.1); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+        .delete-note-btn:focus, .download-note-btn:focus { outline: 3px solid #00bfff; outline-offset: 2px; }
         .note-actions { display: flex; flex-direction: column; gap: 0.75rem; }
         .action-btn { width: 100%; padding: 0.75rem; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease; }
         .save-btn { background: linear-gradient(90deg, #29c00b, #23a00a); color: #ffffff; }
@@ -131,7 +133,17 @@ if (isset($_GET['deleted'])) {
         .message { background: linear-gradient(90deg, #29c00b, #23a00a); color: #ffffff; padding: 1rem; margin-bottom: 1rem; border-radius: 10px; text-align: center; }
         .message.error { background: linear-gradient(90deg, #dc3545, #c82333); }
         footer { background-color: #0e2a47; color: #ffffff; text-align: center; padding: 1rem; font-size: 0.875rem; flex-shrink: 0; }
-        @media (max-width: 768px) { main { padding: 1rem; } .dashboard { flex-direction: column; border-radius: 10px; } .sidebar { width: 100%; max-height: 300px; } .main-content { min-height: calc(100vh - 400px); } .note-actions { flex-direction: row; flex-wrap: wrap; } .action-btn { flex: 1; min-width: 120px; } .note-title-input { font-size: 1.25rem; } nav { flex-direction: column; gap: 1rem; } .nav-right { gap: 1rem; flex-wrap: wrap; justify-content: center; } }
+        @media (max-width: 768px) { 
+            main { padding: 1rem; } 
+            .dashboard { flex-direction: column; border-radius: 10px; } 
+            .sidebar { width: 100%; max-height: 300px; } 
+            .main-content { min-height: calc(100vh - 400px); } 
+            .note-actions { flex-direction: row; flex-wrap: wrap; } 
+            .action-btn { flex: 1; min-width: 120px; } 
+            .note-title-input { font-size: 1.25rem; } 
+            .nav-right { gap: 1rem; flex-wrap: wrap; justify-content: center; } 
+            .note-buttons { flex-direction: row; gap: 0.3rem; }
+        }
     </style>
 </head>
 <body>
@@ -168,9 +180,14 @@ if (isset($_GET['deleted'])) {
                                     <span class="note-title"><?php echo htmlspecialchars($note['note_title']); ?></span>
                                     <span class="note-date"><?php echo date('M d, Y', strtotime($note['updated_at'])); ?></span>
                                 </div>
-                                <a href="delete_note.php?note_id=<?php echo $note['id']; ?>" class="delete-note-btn" onclick="return confirm('Are you sure you want to delete this note?');">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                                <div class="note-buttons">
+                                    <a href="delete_note.php?note_id=<?php echo $note['id']; ?>" class="delete-note-btn" onclick="return confirm('Are you sure you want to delete this note?');" title="Delete Note">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    <button class="download-note-btn" data-note-id="<?php echo $note['id']; ?>" title="Download Note">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
                             </li>
                         <?php endwhile; ?>
                     </ul>
@@ -185,6 +202,11 @@ if (isset($_GET['deleted'])) {
                                     <span class="note-title"><?php echo htmlspecialchars($note['note_title']); ?></span>
                                     <span class="note-owner">by <?php echo htmlspecialchars($note['owner_name']); ?></span>
                                     <span class="note-date"><?php echo date('M d, Y', strtotime($note['updated_at'])); ?></span>
+                                </div>
+                                <div class="note-buttons">
+                                    <button class="download-note-btn" data-note-id="<?php echo $note['id']; ?>" title="Download Note">
+                                        <i class="fas fa-download"></i>
+                                    </button>
                                 </div>
                             </li>
                         <?php endwhile; ?>
@@ -236,11 +258,11 @@ if (isset($_GET['deleted'])) {
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline', 'strike'],
                     [{ 'color': [] }, { 'background': [] }],
-                    [{ 'align': [] }], // Added text alignment options
+                    [{ 'align': [] }],
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     ['link', 'image'],
                     ['clean'],
-                    ['undo', 'redo'] // Added undo/redo buttons
+                    ['undo', 'redo']
                 ],
                 history: {
                     delay: 1000,
@@ -287,7 +309,7 @@ if (isset($_GET['deleted'])) {
 
         document.querySelectorAll('.notes li, .shared-notes li').forEach(note => {
             note.addEventListener('click', function(e) {
-                if (e.target.closest('.delete-note-btn')) return;
+                if (e.target.closest('.delete-note-btn') || e.target.closest('.download-note-btn')) return;
                 const noteId = this.dataset.noteId;
                 const permission = this.dataset.permission || 'edit';
                 currentNoteId = noteId;
@@ -314,6 +336,39 @@ if (isset($_GET['deleted'])) {
             });
         });
 
+        document.querySelectorAll('.download-note-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!confirm('Do you want to download this note?')) return;
+                const noteId = this.dataset.noteId;
+                fetch(`get_note.php?note_id=${noteId}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+                        // Extract plain text from Quill delta
+                        const delta = JSON.parse(data.note_content);
+                        const plainText = delta.ops.map(op => op.insert).join('');
+                        // Create and download text file
+                        const blob = new Blob([`Title: ${data.note_title}\n\n${plainText}`], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${data.note_title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    })
+                    .catch(error => {
+                        console.error('Download error:', error);
+                        alert('Failed to download note. Check console for details.');
+                    });
+            });
+        });
+
         document.querySelector('.save-btn').addEventListener('click', function() {
             const noteTitle = document.getElementById('note-title').value;
             const noteContent = JSON.stringify(quill.getContents());
@@ -324,7 +379,7 @@ if (isset($_GET['deleted'])) {
             fetch('save_note.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `note_title=${encodeURIComponent(noteTitle)}¬e_content=${encodeURIComponent(noteContent)}${currentNoteId ? '¬e_id=' + currentNoteId : ''}`
+                body: `note_title=${encodeURIComponent(noteTitle)}&note_content=${encodeURIComponent(noteContent)}${currentNoteId ? '&note_id=' + currentNoteId : ''}`
             })
             .then(response => {
                 if (!response.ok) throw new Error('Server error');
